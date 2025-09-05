@@ -1,0 +1,1368 @@
+<template>
+  <div class="shell-app">
+    <div class="shell-all-demos-container shell-responsive-container">
+      <!-- Header with fade-in animation -->
+      <Transition name="fade-in" appear>
+        <header class="shell-demos-header">
+          <h1><span class="material-icons">bolt</span> All Demos Showcase</h1>
+          <p>Experience all three micro frontend demos in one unified view</p>
+        </header>
+      </Transition>
+
+      <!-- Global Controls with delayed fade-in -->
+      <Transition name="fade-in-delayed" appear>
+        <div class="shell-global-controls">
+          <h3><span class="material-icons">public</span> Global Controls</h3>
+          <div class="shell-global-buttons">
+            <button @click="clearAllCanvases" class="shell-btn shell-btn-warning">
+                <span class="material-icons">clear_all</span> Clear All Canvases
+            </button>
+            <button @click="deleteSelectedFromAll" class="shell-btn shell-btn-danger">
+              <span class="material-icons">delete_sweep</span> Delete Selected from All
+            </button>
+            <button @click="resetAllDemos" class="shell-btn shell-btn-secondary">
+              <span class="material-icons">restart_alt</span> Reset All Demos
+            </button>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Demo One Section with staggered animation -->
+      <Transition name="slide-up-demo-one" appear>
+        <section class="shell-demo-section shell-demo-one-section">
+          <div class="shell-demo-header">
+            <h2><span class="material-icons">category</span> Shapes Demo One - Basic Shapes</h2>
+            <p>Interactive shape creation and manipulation</p>
+          </div>
+
+          <!-- Demo One Controls -->
+          <div class="shell-demo-controls shell-demo-one-controls">
+            <div class="shell-control-group">
+              <label>Color:</label>
+              <input v-model="demoOneColor" type="color" class="shell-color-input" />
+            </div>
+            <div class="shell-control-buttons">
+              <button @click="addRectangleToOne" class="shell-btn shell-btn-primary">
+                <span class="material-icons">crop_square</span> Rectangle
+              </button>
+              <button @click="addCircleToOne" class="shell-btn shell-btn-primary">
+                <span class="material-icons">circle</span> Circle
+              </button>
+              <button @click="addTriangleToOne" class="shell-btn shell-btn-primary">
+                <span class="material-icons">change_history</span> Triangle
+              </button>
+              <button @click="clearDemoOne" class="shell-btn shell-btn-secondary">
+                 <span class="material-icons">delete</span> Clear
+              </button>
+            </div>
+          </div>
+
+          <div class="shell-demo-canvas-container">
+            <canvas id="demo-one-canvas"></canvas>
+          </div>
+        </section>
+      </Transition>
+
+      <!-- Demo Two Section with staggered animation -->
+      <Transition name="slide-up-demo-two" appear>
+        <section class="shell-demo-section shell-demo-two-section">
+          <div class="shell-demo-header">
+            <h2><span class="material-icons">edit_note</span> Demo Two - Text & Images</h2>
+            <p>Dynamic text and image editing capabilities</p>
+          </div>
+
+          <!-- Demo Two Controls -->
+          <div class="shell-demo-controls shell-demo-two-controls">
+            <div class="shell-control-group">
+              <label>Text:</label>
+              <input
+                v-model="demoTwoText"
+                type="text"
+                placeholder="Enter text"
+                class="shell-text-input"
+              />
+              <button @click="addTextToTwo" class="shell-btn shell-btn-primary">
+                <span class="material-icons">add</span> Add Text
+              </button>
+            </div>
+            <div class="shell-control-group">
+              <label>Image URL:</label>
+              <input
+                v-model="demoTwoImageUrl"
+                type="text"
+                placeholder="Image URL"
+                class="shell-text-input"
+              />
+              <button
+                @click="addImageToTwo"
+                class="shell-btn shell-btn-success"
+                :disabled="isLoadingImage"
+              >
+              <span class="material-icons" v-if="!isLoadingImage">image</span>
+                {{ isLoadingImage ? "⏳ Loading..." : "Add Image" }}
+              </button>
+            </div>
+            <div class="shell-control-buttons">
+              <button @click="clearDemoTwo" class="shell-btn shell-btn-secondary">
+                <span class="material-icons">delete</span> Clear
+              </button>
+            </div>
+          </div>
+
+          <div class="shell-demo-canvas-container">
+            <canvas id="demo-two-canvas"></canvas>
+          </div>
+        </section>
+      </Transition>
+
+      <!-- Demo Three Section with staggered animation -->
+      <Transition name="slide-up-demo-three" appear>
+        <section class="shell-demo-section shell-demo-three-section">
+          <div class="shell-demo-header">
+            <h2><span class="material-icons">draw</span> Demo Three - Drawing</h2>
+            <p>Free-hand drawing and artistic creation</p>
+          </div>
+
+          <!-- Demo Three Controls -->
+          <div class="shell-demo-controls shell-demo-three-controls">
+            <div class="shell-control-group">
+              <label>Drawing Mode:</label>
+              <button
+                @click="toggleDrawingMode"
+                :class="['shell-btn', isDrawingMode ? 'shell-btn-danger' : 'shell-btn-success']"
+              >
+              <span class="material-icons" >{{ isDrawingMode ? 'stop' : 'edit' }}</span>
+                {{ isDrawingMode ? "Stop Drawing" : "Start Drawing" }}
+              </button>
+            </div>
+            <div class="shell-control-group">
+              <label>Brush Width:</label>
+              <input
+                v-model="brushWidth"
+                type="range"
+                min="1"
+                max="20"
+                class="shell-range-input"
+              />
+              <span>{{ brushWidth }}px</span>
+            </div>
+            <div class="shell-control-group">
+              <label>Brush Color:</label>
+              <input v-model="brushColor" type="color" class="shell-color-input" />
+            </div>
+            <div class="shell-control-buttons">
+              <button @click="clearDemoThree" class="shell-btn shell-btn-secondary">
+                <span class="material-icons">delete</span> Clear
+              </button>
+            </div>
+          </div>
+
+          <div class="shell-demo-canvas-container">
+            <canvas id="demo-three-canvas"></canvas>
+          </div>
+        </section>
+      </Transition>
+
+      <!-- Info Section with extra delayed fade-in -->
+      <Transition name="fade-in-extra-delayed" appear>
+        <div class="shell-info">
+          <p><strong>Micro Frontend Architecture Demo:</strong></p>
+          <ul>
+            <li>Each demo runs independently with its own Fabric.js canvas</li>
+            <li>Demonstrates isolated micro frontend functionality</li>
+            <li>All demos load automatically and showcase their core features</li>
+            <li>Perfect for demonstrating the full capabilities of the system</li>
+          </ul>
+        </div>
+      </Transition>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
+
+// Reactive state for controls
+const demoOneColor = ref("#0054C9");
+const demoTwoText = ref("Hello World!");
+const demoTwoImageUrl = ref("");
+const isLoadingImage = ref(false);
+const isDrawingMode = ref(false);
+const brushWidth = ref(5);
+const brushColor = ref("#ef4444");
+
+// Canvas references
+let demoOneCanvas = null;
+let demoTwoCanvas = null;
+let demoThreeCanvas = null;
+
+// Demo modules
+let demoOneModule = null;
+let demoTwoModule = null;
+let demoThreeModule = null;
+
+// Resize handlers
+let demoOneResizeHandler = null;
+let demoTwoResizeHandler = null;
+let demoThreeResizeHandler = null;
+
+onMounted(async () => {
+  console.log("All Demos page mounted, initializing all demos...");
+
+  // Initialize all demos
+  await initializeDemoOne();
+  await initializeDemoTwo();
+  await initializeDemoThree();
+});
+
+onUnmounted(() => {
+  // Clean up resize handlers
+  if (demoOneResizeHandler) {
+    window.removeEventListener("resize", demoOneResizeHandler);
+  }
+  if (demoTwoResizeHandler) {
+    window.removeEventListener("resize", demoTwoResizeHandler);
+  }
+  if (demoThreeResizeHandler) {
+    window.removeEventListener("resize", demoThreeResizeHandler);
+  }
+
+  // Clean up all canvases
+  if (demoOneCanvas && demoOneCanvas.dispose) {
+    demoOneCanvas.dispose();
+  }
+  if (demoTwoCanvas && demoTwoCanvas.dispose) {
+    demoTwoCanvas.dispose();
+  }
+  if (demoThreeCanvas && demoThreeCanvas.dispose) {
+    demoThreeCanvas.dispose();
+  }
+});
+
+// Initialize Demo One
+const initializeDemoOne = async () => {
+  try {
+    // Import demo one module
+    demoOneModule = await import("demoOneApp/demoOneLogic");
+
+    const el = document.getElementById("demo-one-canvas");
+    if (!el) throw new Error("Canvas element for Demo One not found");
+
+    const container = el.parentElement;
+    // const width = container.clientWidth - 40;
+    // const height = 600;
+
+    // demoOneCanvas = demoOneModule.initDemoOneCanvas("demo-one-canvas", { width, height });
+    setTimeout(() => {
+      const width = container.clientWidth - 40 || 800;
+      const height = 600;
+
+      demoOneCanvas = demoOneModule.initDemoOneCanvas("demo-one-canvas", { width, height });
+      resize();
+    }, 0);
+
+    const resize = () => {
+      if (demoOneCanvas) {
+        const newWidth = container.clientWidth - 40 || 800;
+        demoOneCanvas.setDimensions({
+          width: newWidth,
+          height: 600,
+        });
+        demoOneCanvas.renderAll();
+      }
+    };
+    demoOneResizeHandler = () => requestAnimationFrame(resize);
+    window.addEventListener("resize", demoOneResizeHandler);
+
+    setTimeout(() => {
+      if (demoOneCanvas) {
+        demoOneModule.addRectangle(demoOneCanvas, { left: 50, top: 50, fill: "#0054C9" });
+        demoOneModule.addCircle(demoOneCanvas, { left: 200, top: 100, fill: "#6AAAEB" });
+        demoOneModule.addTriangle(demoOneCanvas, { left: 350, top: 80, fill: "#031F3C" });
+      }
+    }, 500);
+
+    console.log("Demo One initialized successfully");
+  } catch (error) {
+    console.error("Failed to initialize Demo One:", error);
+  }
+};
+
+// Initialize Demo Two
+const initializeDemoTwo = async () => {
+  try {
+    // Import demo two module
+    demoTwoModule = await import("demoTwoApp/demoTwoLogic");
+
+    const el = document.getElementById("demo-two-canvas");
+    if (!el) throw new Error("Canvas element for Demo One not found");
+
+    const container = el.parentElement;
+
+    setTimeout(() => {
+      const width = container.clientWidth - 40 || 800;
+      const height = 600;
+
+      demoTwoCanvas = demoTwoModule.initDemoTwoCanvas("demo-two-canvas", { width, height });
+      resize();
+    }, 0);
+
+    const resize = () => {
+      if (demoTwoCanvas) {
+        const newWidth = container.clientWidth - 40 || 800;
+        demoTwoCanvas.setDimensions({
+          width: newWidth,
+          height: 600,
+        });
+        demoTwoCanvas.renderAll();
+      }
+    };
+    demoTwoResizeHandler = () => requestAnimationFrame(resize);
+    window.addEventListener("resize", demoTwoResizeHandler);
+
+    // Add some sample content
+    setTimeout(() => {
+      if (demoTwoCanvas && demoTwoModule) {
+        // Add sample text
+        demoTwoModule.addText(demoTwoCanvas, {
+          text: "Welcome to Demo Two!",
+          left: 50,
+          top: 50,
+          fontSize: 28,
+          fill: "#0054C9",
+        });
+
+        // Add sample image
+        demoTwoModule.addImage(demoTwoCanvas, "https://picsum.photos/150/100", {
+          left: 300,
+          top: 150,
+          scaleX: 0.8,
+          scaleY: 0.8,
+        });
+      }
+    }, 1000);
+
+    console.log("Demo Two initialized successfully");
+  } catch (error) {
+    console.error("Failed to initialize Demo Two:", error);
+  }
+};
+
+// Initialize Demo Three
+const initializeDemoThree = async () => {
+  try {
+    // Import demo three module
+    demoThreeModule = await import("demoThreeApp/demoThreeLogic");
+
+   const el = document.getElementById("demo-three-canvas");
+    if (!el) throw new Error("Canvas element for Demo One not found");
+
+    const container = el.parentElement;
+
+    setTimeout(() => {
+      const width = container.clientWidth - 40 || 800;
+      const height = 600;
+
+      demoThreeCanvas = demoThreeModule.initDemoThreeCanvas("demo-three-canvas", { width, height });
+      resize();
+    }, 0);
+
+    const resize = () => {
+      if (demoThreeCanvas) {
+        const newWidth = container.clientWidth - 40 || 800;
+        demoThreeCanvas.setDimensions({
+          width: newWidth,
+          height: 600,
+        });
+        demoThreeCanvas.renderAll();
+      }
+    };
+    demoThreeResizeHandler = () => requestAnimationFrame(resize);
+    window.addEventListener("resize", demoThreeResizeHandler);
+
+    // Add some sample content
+    setTimeout(() => {
+      if (demoThreeCanvas && demoThreeModule) {
+        // Enable drawing mode briefly to show capability
+        demoThreeModule.setDrawingMode(demoThreeCanvas, true);
+
+        // Add some sample drawing paths or disable after showing
+        setTimeout(() => {
+          demoThreeModule.setDrawingMode(demoThreeCanvas, false);
+        }, 2000);
+      }
+    }, 1500);
+
+    console.log("Demo Three initialized successfully");
+  } catch (error) {
+    console.error("Failed to initialize Demo Three:", error);
+  }
+};
+
+// Global Control Functions
+const clearAllCanvases = () => {
+  if (demoOneCanvas && demoOneModule) {
+    demoOneModule.clearCanvas(demoOneCanvas);
+  }
+  if (demoTwoCanvas && demoTwoModule) {
+    demoTwoModule.clearCanvas(demoTwoCanvas);
+  }
+  if (demoThreeCanvas && demoThreeModule) {
+    demoThreeModule.clearCanvas(demoThreeCanvas);
+  }
+  console.log("All canvases cleared");
+};
+
+const deleteSelectedFromAll = () => {
+  if (demoOneCanvas && demoOneCanvas.getActiveObject()) {
+    demoOneCanvas.remove(demoOneCanvas.getActiveObject());
+    demoOneCanvas.renderAll();
+  }
+  if (demoTwoCanvas && demoTwoCanvas.getActiveObject()) {
+    demoTwoCanvas.remove(demoTwoCanvas.getActiveObject());
+    demoTwoCanvas.renderAll();
+  }
+  if (demoThreeCanvas && demoThreeCanvas.getActiveObject()) {
+    demoThreeCanvas.remove(demoThreeCanvas.getActiveObject());
+    demoThreeCanvas.renderAll();
+  }
+  console.log("Selected objects deleted from all canvases");
+};
+
+const resetAllDemos = async () => {
+  clearAllCanvases();
+
+  // Re-add sample content after a short delay
+  setTimeout(() => {
+    // Reset Demo One
+    if (demoOneCanvas && demoOneModule) {
+      demoOneModule.addRectangle(demoOneCanvas, {
+        left: 50,
+        top: 50,
+        fill: demoOneColor.value,
+      });
+      demoOneModule.addCircle(demoOneCanvas, {
+        left: 200,
+        top: 100,
+        fill: "#6AAAEB",
+      });
+      demoOneModule.addTriangle(demoOneCanvas, {
+        left: 350,
+        top: 80,
+        fill: "#031F3C",
+      });
+    }
+
+    // Reset Demo Two
+    if (demoTwoCanvas && demoTwoModule) {
+      demoTwoModule.addText(demoTwoCanvas, {
+        text: "Welcome to Demo Two!",
+        left: 50,
+        top: 50,
+        fontSize: 28,
+        fill: "#0054C9",
+      });
+      demoTwoModule.addImage(demoTwoCanvas, "https://picsum.photos/150/100", {
+        left: 300,
+        top: 150,
+        scaleX: 0.8,
+        scaleY: 0.8,
+      });
+    }
+  }, 300);
+};
+
+// Demo One Control Functions
+const addRectangleToOne = () => {
+  if (demoOneCanvas && demoOneModule) {
+    demoOneModule.addRectangle(demoOneCanvas, {
+      left: Math.random() * 400,
+      top: Math.random() * 300,
+      fill: demoOneColor.value,
+    });
+  }
+};
+
+const addCircleToOne = () => {
+  if (demoOneCanvas && demoOneModule) {
+    demoOneModule.addCircle(demoOneCanvas, {
+      left: Math.random() * 400,
+      top: Math.random() * 300,
+      fill: demoOneColor.value,
+    });
+  }
+};
+
+const addTriangleToOne = () => {
+  if (demoOneCanvas && demoOneModule) {
+    demoOneModule.addTriangle(demoOneCanvas, {
+      left: Math.random() * 400,
+      top: Math.random() * 300,
+      fill: demoOneColor.value,
+    });
+  }
+};
+
+const clearDemoOne = () => {
+  if (demoOneCanvas && demoOneModule) {
+    demoOneModule.clearCanvas(demoOneCanvas);
+  }
+};
+
+// Demo Two Control Functions
+const addTextToTwo = () => {
+  if (demoTwoCanvas && demoTwoModule && demoTwoText.value.trim()) {
+    demoTwoModule.addText(demoTwoCanvas, {
+      text: demoTwoText.value,
+      left: Math.random() * 400,
+      top: Math.random() * 300,
+      fontSize: 24,
+      fill: "#0054C9",
+    });
+  }
+};
+
+const addImageToTwo = async () => {
+  if (
+    demoTwoCanvas &&
+    demoTwoModule &&
+    demoTwoImageUrl.value.trim() &&
+    !isLoadingImage.value
+  ) {
+    isLoadingImage.value = true;
+    try {
+      await demoTwoModule.addImage(
+        demoTwoCanvas,
+        demoTwoImageUrl.value,
+        {
+          left: Math.random() * 300,
+          top: Math.random() * 200,
+          scaleX: 0.5,
+          scaleY: 0.5,
+        },
+        () => {
+          isLoadingImage.value = false;
+        },
+        () => {
+          isLoadingImage.value = false;
+          alert("Failed to load image. Please check the URL.");
+        }
+      );
+    } catch (error) {
+      isLoadingImage.value = false;
+      console.error("Error adding image:", error);
+    }
+  }
+};
+
+const clearDemoTwo = () => {
+  if (demoTwoCanvas && demoTwoModule) {
+    demoTwoModule.clearCanvas(demoTwoCanvas);
+  }
+};
+
+// Demo Three Control Functions
+const toggleDrawingMode = () => {
+  if (demoThreeCanvas && demoThreeModule) {
+    isDrawingMode.value = !isDrawingMode.value;
+    demoThreeModule.setDrawingMode(demoThreeCanvas, isDrawingMode.value);
+
+    if (isDrawingMode.value) {
+      demoThreeModule.setBrushWidth(demoThreeCanvas, brushWidth.value);
+      demoThreeModule.setBrushColor(demoThreeCanvas, brushColor.value);
+    }
+  }
+};
+
+const clearDemoThree = () => {
+  if (demoThreeCanvas && demoThreeModule) {
+    demoThreeModule.clearCanvas(demoThreeCanvas);
+    isDrawingMode.value = false;
+  }
+};
+
+// Watch for brush changes
+import { watch } from "vue";
+
+watch(brushWidth, (newWidth) => {
+  if (demoThreeCanvas && demoThreeModule && isDrawingMode.value) {
+    demoThreeModule.setBrushWidth(demoThreeCanvas, newWidth);
+  }
+});
+
+watch(brushColor, (newColor) => {
+  if (demoThreeCanvas && demoThreeModule && isDrawingMode.value) {
+    demoThreeModule.setBrushColor(demoThreeCanvas, newColor);
+  }
+});
+</script>
+
+<style scoped>
+/* Shell App Scoped Styles - Prevents conflicts with micro frontend CSS */
+.shell-responsive-container {
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.shell-all-demos-container {
+  padding: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.shell-demos-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.shell-demos-header h1 {
+  color: #0054c9;
+  margin-bottom: 10px;
+  font-size: 2.5em;
+}
+
+.shell-demos-header h1 .material-icons{
+  font-size: 2.5rem;
+  vertical-align: middle;
+  padding-bottom: 8px;
+}
+
+.shell-demos-header p {
+  color: #495057;
+  font-size: 1.2em;
+}
+
+/* Global Controls */
+.shell-global-controls {
+  background: #f8f9fa;
+  border: 2px solid #0054c9;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.shell-global-controls h3 {
+  color: #0054c9;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.4em;
+}
+
+.shell-global-controls h3 .material-icons{
+  font-size: 1.5rem;
+  vertical-align: middle;
+  padding-bottom: 5px;
+}
+
+.shell-global-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.shell-global-buttons .shell-btn {
+  font-size: 1rem;
+  padding: 12px 20px;
+  min-width: 180px;
+}
+
+.shell-global-buttons .shell-btn .material-icons{
+  font-size: 1.1rem;
+  vertical-align: middle;
+}
+
+.shell-demo-section {
+  margin-bottom: 50px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.shell-demo-one-section {
+  border-left: 4px solid #0054c9;
+}
+
+.shell-demo-two-section {
+  border-left: 4px solid #6aaaeb;
+}
+
+.shell-demo-three-section {
+  border-left: 4px solid #f59e0b;
+}
+
+.shell-demo-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.shell-demo-header h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.8rem;
+}
+
+.shell-demo-header h2 .material-icons{
+  font-size: 2rem;
+  vertical-align: middle;
+  padding-bottom: 6px;
+}
+
+.shell-demo-one-section .shell-demo-header h2 {
+  color: #0054c9;
+}
+
+.shell-demo-two-section .shell-demo-header h2 {
+  color: #6aaaeb;
+}
+
+.shell-demo-three-section .shell-demo-header h2 {
+  color: #f59e0b;
+}
+
+.shell-demo-header p {
+  color: #6c757d;
+  font-size: 1.1em;
+  margin: 0;
+}
+
+/* Demo Controls */
+.shell-demo-controls {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.shell-demo-one-controls {
+  border-left: 4px solid #0054c9;
+}
+
+.shell-demo-two-controls {
+  border-left: 4px solid #6aaaeb;
+}
+
+.shell-demo-three-controls {
+  border-left: 4px solid #f59e0b;
+}
+
+.shell-control-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.shell-control-group label {
+  font-weight: 600;
+  color: #495057;
+  min-width: 80px;
+}
+
+.shell-control-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.shell-text-input {
+  padding: 8px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 200px;
+}
+
+.shell-text-input:focus {
+  outline: none;
+  border-color: #0054c9;
+}
+
+.shell-color-input {
+  width: 50px;
+  height: 40px;
+  border: 2px solid #e9ecef;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.shell-range-input {
+  width: 120px;
+  margin: 0 10px;
+}
+
+/* Shell Button Styles */
+.shell-btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 400;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shell-btn .material-icons{
+  font-size: 1.25rem;
+  vertical-align: middle;
+}
+
+.shell-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.shell-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.shell-btn-primary {
+  background: #0054c9;
+  color: white;
+}
+
+.shell-btn-primary:hover:not(:disabled) {
+  background: #003d96;
+}
+
+.shell-btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.shell-btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.shell-btn-warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.shell-btn-warning:hover:not(:disabled) {
+  background: #d97706;
+}
+
+.shell-btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.shell-btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.shell-btn-secondary {
+  background: #031f3c;
+  color: white;
+}
+
+.shell-btn-secondary:hover:not(:disabled) {
+  background: #021529;
+}
+
+.shell-demo-canvas-container {
+  text-align: center;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  overflow-x: auto;
+}
+
+#demo-one-canvas,#demo-two-canvas,#demo-three-canvas {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  max-width: 100%;
+  height: auto;
+}
+
+.shell-info {
+  background: #e3f2fd;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #0054c9;
+  margin-top: 30px;
+}
+
+.shell-info ul {
+  margin: 10px 0 0 20px;
+}
+
+.shell-info li {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .shell-all-demos-container {
+    padding: 15px;
+  }
+
+  .shell-demo-section {
+    padding: 25px;
+  }
+
+  .shell-global-buttons {
+    gap: 10px;
+  }
+
+  .shell-control-buttons {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 820px) {
+  .shell-all-demos-container {
+    padding: 10px;
+  }
+
+  .shell-demo-section {
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+
+  .shell-demos-header h1 {
+    font-size: 2em;
+  }
+
+  .shell-demo-header h2 {
+    font-size: 1.5em;
+  }
+
+  .shell-global-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .shell-global-buttons .shell-btn {
+    min-width: 100%;
+    max-width: 300px;
+  }
+
+  .shell-control-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .shell-control-group label {
+    min-width: auto;
+  }
+
+  .shell-control-buttons {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .shell-control-buttons .shell-btn {
+    flex: 1;
+    min-width: 120px;
+    max-width: 150px;
+  }
+
+  .shell-text-input {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .shell-range-input {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .shell-demo-canvas-container {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .shell-all-demos-container {
+    padding: 5px;
+  }
+
+  .shell-demo-section {
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+
+  .shell-demos-header {
+    margin-bottom: 30px;
+  }
+
+  .shell-demos-header h1 {
+    font-size: 1.8em;
+  }
+
+  .shell-demo-header h2 {
+    font-size: 1.3em;
+  }
+
+  .shell-global-controls,
+  .shell-demo-controls {
+    padding: 15px;
+  }
+
+  .shell-control-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .shell-control-buttons .shell-btn {
+    min-width: 100%;
+    max-width: none;
+  }
+
+  .shell-demo-canvas-container {
+    padding: 10px;
+  }
+
+  .shell-btn {
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .shell-global-buttons .shell-btn {
+    padding: 15px 20px;
+    font-size: 1rem;
+  }
+}
+
+/* Animation Transitions */
+
+/* Basic fade-in animation */
+.fade-in-enter-active {
+  transition: all 0.8s ease-out;
+}
+
+.fade-in-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.fade-in-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Delayed fade-in animation */
+.fade-in-delayed-enter-active {
+  transition: all 0.8s ease-out;
+  transition-delay: 0.3s;
+}
+
+.fade-in-delayed-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.fade-in-delayed-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Extra delayed fade-in animation */
+.fade-in-extra-delayed-enter-active {
+  transition: all 0.8s ease-out;
+  transition-delay: 1.2s;
+}
+
+.fade-in-extra-delayed-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.fade-in-extra-delayed-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered slide-up animations for demo sections */
+.slide-up-demo-one-enter-active {
+  transition: all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition-delay: 0.5s;
+}
+
+.slide-up-demo-one-enter-from {
+  opacity: 0;
+  transform: translateY(50px) scale(0.95);
+}
+
+.slide-up-demo-one-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.slide-up-demo-two-enter-active {
+  transition: all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition-delay: 0.7s;
+}
+
+.slide-up-demo-two-enter-from {
+  opacity: 0;
+  transform: translateY(50px) scale(0.95);
+}
+
+.slide-up-demo-two-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.slide-up-demo-three-enter-active {
+  transition: all 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition-delay: 0.9s;
+}
+
+.slide-up-demo-three-enter-from {
+  opacity: 0;
+  transform: translateY(50px) scale(0.95);
+}
+
+.slide-up-demo-three-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Enhanced header animations */
+.shell-demos-header h1 {
+  animation: titleFadeIn 1s ease-out;
+}
+
+.shell-demos-header p {
+  animation: subtitleFadeIn 1s ease-out 0.3s both;
+}
+
+@keyframes titleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes subtitleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staggered button animations */
+.shell-btn {
+  animation: buttonFadeIn 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+.shell-global-buttons .shell-btn:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.shell-global-buttons .shell-btn:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.shell-global-buttons .shell-btn:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes buttonFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Demo section header animations */
+.shell-demo-header h2 {
+  animation: demoHeaderFadeIn 0.8s ease-out 0.2s both;
+}
+
+.shell-demo-header p {
+  animation: demoSubtitleFadeIn 0.8s ease-out 0.4s both;
+}
+
+@keyframes demoHeaderFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes demoSubtitleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Control group animations */
+.shell-control-group {
+  animation: controlGroupFadeIn 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+.shell-demo-one-controls .shell-control-group {
+  animation-delay: 0.6s;
+}
+
+.shell-demo-two-controls .shell-control-group {
+  animation-delay: 0.8s;
+}
+
+.shell-demo-three-controls .shell-control-group {
+  animation-delay: 1.0s;
+}
+
+@keyframes controlGroupFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Control buttons staggered animations */
+.shell-control-buttons .shell-btn:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.shell-control-buttons .shell-btn:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.shell-control-buttons .shell-btn:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+.shell-control-buttons .shell-btn:nth-child(4) {
+  animation-delay: 0.25s;
+}
+
+/* Canvas container animations */
+.shell-demo-canvas-container {
+  animation: canvasFadeIn 0.8s ease-out;
+  animation-fill-mode: both;
+}
+
+.shell-demo-one-section .shell-demo-canvas-container {
+  animation-delay: 0.8s;
+}
+
+.shell-demo-two-section .shell-demo-canvas-container {
+  animation-delay: 1.0s;
+}
+
+.shell-demo-three-section .shell-demo-canvas-container {
+  animation-delay: 1.2s;
+}
+
+@keyframes canvasFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Info section list animations */
+.shell-info ul li {
+  animation: listItemSlideIn 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+.shell-info ul li:nth-child(1) { animation-delay: 0.1s; }
+.shell-info ul li:nth-child(2) { animation-delay: 0.2s; }
+.shell-info ul li:nth-child(3) { animation-delay: 0.3s; }
+.shell-info ul li:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes listItemSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Input field animations */
+.shell-text-input,
+.shell-color-input,
+.shell-range-input {
+  animation: inputFadeIn 0.4s ease-out;
+  animation-fill-mode: both;
+  animation-delay: 0.2s;
+}
+
+@keyframes inputFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Enhanced hover effects */
+.shell-btn:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading state animation enhancement */
+.shell-btn:disabled {
+  animation: pulseDisabled 2s infinite;
+}
+
+@keyframes pulseDisabled {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+</style>

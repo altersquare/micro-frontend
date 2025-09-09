@@ -93,7 +93,7 @@ This will start all five applications simultaneously:
 - **🖌️ Demo Three**: Port 3003 (Drawing)
 - **🔢 Demo Counter**: Port 3004 (State management demo)
 
-All URLs and ports are now centrally managed through environment variables in `.env.local` for development and `.env.production` for production builds.
+All URLs and ports are now centrally managed through environment variables in `.env.local` for local development.
 
 ### 🌐 Application Routes
 
@@ -118,35 +118,29 @@ All URLs and ports are now centrally managed through environment variables in `.
 # Development build (uses .env.local)
 npm run build
 
-# Production build - all apps (uses .env.production)
-npm run build:prod
-
-# Production build - individual apps (uses .env.production)
-npm run build:shell
-npm run build:demo-one
-npm run build:demo-two
-npm run build:demo-three
-npm run build:demo-counter
-
 # Preview development build
 npm run preview
 
-# Preview production build
-npm run preview:prod
+# Clean all build artifacts
+npm run clean
 
-# Serve built applications locally for testing
-npm run serve
+# Install all dependencies
+npm run install-all
+
+# Clean install (removes node_modules and reinstalls)
+npm run install:clean
 ```
 
-**Production Deployment:**
-1. **Build all apps**: `npm run build`
-2. **Deploy each dist folder** to your hosting service:
-   - `shell-app/dist/` → Main domain (e.g., https://your-app.com)
-   - `demo-one-app/dist/` → Subdomain (e.g., https://demo1.your-app.com)
-   - `demo-two-app/dist/` → Subdomain (e.g., https://demo2.your-app.com)
-   - `demo-three-app/dist/` → Subdomain (e.g., https://demo3.your-app.com)
-3. **Configure CORS** on all servers to allow cross-origin module federation
-4. **Update module federation URLs** in production configs if needed
+**Local Development Setup:**
+1. **Install dependencies**: `npm install`
+2. **Start all apps**: `npm run dev`
+3. **Access the shell app**: http://localhost:3000
+4. **Individual apps are available** on their respective ports:
+   - Shell App: http://localhost:3000
+   - Demo One: http://localhost:3001
+   - Demo Two: http://localhost:3002
+   - Demo Three: http://localhost:3003
+   - Demo Counter: http://localhost:3004
 
 ## 📁 Project Structure
 

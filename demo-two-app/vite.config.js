@@ -3,21 +3,15 @@ import vue from "@vitejs/plugin-vue";
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from "vite";
 
-export default defineConfig(({ mode }) => {
-  // Try to load environment variables from root directory first (for development)
-  // Then fallback to current directory (for Vercel deployment)
-  let env = loadEnv(mode, '../', '')
-
-  // If no environment variables found, try loading from current directory
-  if (!env.VITE_DEMO_TWO_PORT) {
-    env = loadEnv(mode, './', '')
-  }
+export default defineConfig(() => {
+  // Load environment variables from current directory for local development
+  const env = loadEnv('development', './', '')
 
   // Validate required environment variables
   const requiredEnvVars = ['VITE_SHELL_REMOTE_ENTRY', 'VITE_DEMO_TWO_PORT']
   const missingVars = requiredEnvVars.filter(varName => !env[varName])
   if (missingVars.length > 0) {
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}. Please check your .env.local or .env.production file.`)
+    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}. Please check your .env.local file.`)
   }
 
   // Use environment variables for remote entries

@@ -144,11 +144,11 @@ main {
   header p {
     font-size: 1.1rem;
   }
-/* 
+/*
   main {
     padding: 1.5rem 1rem;
-  }
-} */
+  } */
+}
 
 @media (max-width: 480px) {
   header {

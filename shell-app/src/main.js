@@ -7,9 +7,6 @@ import { createPinia } from "pinia";
 // Load CSS from all micro frontends
 console.log("🎨 Loading micro frontend styles...");
 
-// Determine if we're in development mode
-const isDev = import.meta.env.MODE === "development";
-
 const demoApps = [
   {
     name: "demo-one",

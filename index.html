@@ -1827,7 +1827,7 @@
         .altersquare-micro-frontend-demo .qodef-header-logo-link {
             visibility: hidden;
         }
-        
+
     </style>
 </head>
 
@@ -2821,14 +2821,14 @@
   <span class="keyword">try</span> {
     <span class="comment">// Dynamic import via Module Federation</span>
     <span class="keyword">const</span> demoOneModule = <span class="keyword">await import</span>(<span class="string">'demoOneApp/demoOneLogic'</span>)
-    
+
     <span class="comment">// Module loaded, now available for canvas operations</span>
     demoOneModule.addRectangle(canvas, {
       left: <span class="string">100</span>,
       top: <span class="string">100</span>,
       fill: selectedColor.value
     })
-    
+
     console.log(<span class="string">'Demo One loaded and ready'</span>)
   } <span class="keyword">catch</span> (error) {
     console.error(<span class="string">'Failed to load Demo One:'</span>, error)
@@ -3288,7 +3288,7 @@ style="width:100%; height:700px; border:0;" loading="lazy">
                             </ul>
                         </div>
 
-                        <div class="comparison-card">
+                        <!-- <div class="comparison-card">
                             <h4>🔄 Version Management</h4>
                             <p><strong>Challenge:</strong> Managing shared library versions across teams</p>
                             <p><strong>Solutions:</strong></p>
@@ -3298,7 +3298,7 @@ style="width:100%; height:700px; border:0;" loading="lazy">
                                 <li>Version compatibility testing</li>
                                 <li>Gradual rollout strategies</li>
                             </ul>
-                        </div>
+                        </div> -->
 
                         <div class="comparison-card">
                             <h4>🧪 Testing Complexity</h4>
@@ -3324,6 +3324,128 @@ style="width:100%; height:700px; border:0;" loading="lazy">
                             </ul>
                         </div>
                     </div>
+                    <h3>Styling in Module Federation</h3>
+                    <p><strong>Problem:</strong> Styles from remotes can fail to apply inside the host in dev (due to SFC <code>scoped</code> styles and injection order), and after build we don’t have precise control to “share” styles via JS.</p>
+                    <p><strong>Our solution:</strong></p>
+                    <ul>
+                        <li><strong>Dev:</strong> Exposed components use unscoped/global styles (avoid <code>scoped</code> on SFCs you expose) so the host can consume them as-is.</li>
+                        <li><strong>Build:</strong> Extract all CSS into a single file per remote and have the shell load these stylesheets before mounting modules. This avoids relying on JS-injected styles post-build.</li>
+                        <li><strong>Order & isolation:</strong> Load remote CSS deterministically; when needed, isolate using CSS Modules (hashed) or Shadow DOM for leaf widgets.</li>
+                        <li><strong>Collision prevention:</strong> Namespace classes/IDs (prefix per app or BEM) to avoid overrides across apps.</li>
+                    </ul>
+
+                        <h4>Build output: single CSS file per remote (Vite/Rollup)</h4>
+                        <p>We configure each remote to emit one CSS file so the host can load it via a simple <code>&lt;link rel="stylesheet"&gt;</code>. With Vite (Rollup under the hood), disable CSS code splitting and optionally choose a stable filename:</p>
+                        <div class="code-block">
+                            <pre><span class="comment">// vite.config.ts (in each remote app)</span>
+<span class="keyword">import</span> { defineConfig } <span class="keyword">from</span> <span class="string">'vite'</span>
+<span class="keyword">import</span> vue <span class="keyword">from</span> <span class="string">'@vitejs/plugin-vue'</span>
+
+<span class="keyword">export default</span> defineConfig({
+  plugins: [vue()],
+  build: {
+    <span class="comment">// Emit a single combined CSS file for this remote</span>
+    cssCodeSplit: <span class="keyword">false</span>,
+    rollupOptions: {
+      output: {
+        <span class="comment">// Give CSS a predictable name so the shell can reference it</span>
+        assetFileNames: (assetInfo) => {
+          <span class="keyword">if</span> (assetInfo.name <span class="keyword">&&</span> assetInfo.name.endsWith(<span class="string">'.css'</span>)) {
+            <span class="keyword">return</span> <span class="string">'assets/remote.css'</span> <span class="comment">// or `${name}.css` per app</span>
+          }
+          <span class="keyword">return</span> <span class="string">'assets/[name]-[hash][extname]'</span>
+        },
+      },
+    },
+  },
+})</pre>
+                        </div>
+
+                        <p>Result: each remote publishes a stable CSS URL (e.g., <code>/assets/remote.css</code>) that the host can preload or load before mounting modules, ensuring correct cascade and fewer flashes of unstyled content.</p>
+
+                        <h4>Host: load remote CSS before mounting</h4>
+                        <p>The shell loads each remote's CSS deterministically before creating the Vue app. This mirrors our build-time behavior and avoids relying on JS-injected styles after code-split chunks load.</p>
+                        <div class="code-block">
+                            <pre><span class="comment">// shell-app/src/main.js (build behavior)</span>
+<span class="keyword">const</span> remotes = [
+  { name: <span class="string">'demo-one'</span>,   href: import.meta.env.VITE_DEMO_ONE_CSS_URL },
+  { name: <span class="string">'demo-two'</span>,   href: import.meta.env.VITE_DEMO_TWO_CSS_URL },
+  { name: <span class="string">'demo-three'</span>, href: import.meta.env.VITE_DEMO_THREE_CSS_URL },
+  { name: <span class="string">'demo-counter'</span>, href: import.meta.env.VITE_DEMO_COUNTER_CSS_URL },
+]
+
+<span class="keyword">for</span> (<span class="keyword">const</span> r <span class="keyword">of</span> remotes) {
+  <span class="keyword">const</span> link = document.createElement(<span class="string">'link'</span>)
+  link.rel = <span class="string">'stylesheet'</span>
+  link.href = r.href
+  link.onload = () => console.log(<span class="string">`✅ ${r.name} CSS loaded`</span>)
+  link.onerror = () => console.error(<span class="string">`❌ Failed loading ${r.name} CSS`</span>)
+  document.head.appendChild(link)
+}
+
+<span class="comment">// Then mount the shell app</span></pre>
+                        </div>
+
+                        <p><em>Note:</em> This isn’t heavy—these stylesheets are already built and hosted by each remote (or its CDN). The shell simply references them, so the cost is just a few cacheable GETs (often HTTP/2 multiplexed). You can also <code>&lt;link rel="preload" as="style"&gt;</code> to optimize first paint.</p>
+
+
+                    <h3>Turbo: Versioning & Selective Builds/Deploys</h3>
+                    <p><strong>Problem:</strong> Keeping versions consistent across apps and rebuilding/deploying everything on each push.</p>
+                    <p><strong>Our solution with Turborepo:</strong></p>
+                    <ul>
+                        <li><strong>Consistent versions:</strong> Single workspace/lockfile keeps dependency versions aligned across all apps.</li>
+                        <li><strong>Affected-only builds:</strong> Turbo uses git-aware change detection and task hashing to rebuild only impacted packages (with remote cache speeding CI).</li>
+                        <li><strong>Targeted deploys:</strong> CI deploys only changed apps based on the affected graph, instead of redeploying the entire fleet.</li>
+                        <li><strong>Example:</strong> <code>turbo run build --since=origin/main</code> and deploy only the apps whose build outputs changed.</li>
+                    </ul>
+                        <p><em>What is Turborepo?</em> A build system for JavaScript/TypeScript monorepos. It understands your package graph, runs tasks in the right order, and caches outputs locally or remotely so unchanged work is instantly reused.</p>
+                        <p><em>How we use it (repo‑agnostic):</em> Place each app/package in a workspace (e.g., <code>apps/*</code>, <code>packages/*</code>). Define tasks like <code>build</code>/<code>test</code> in each <code>package.json</code>. Turborepo executes those tasks respecting dependencies and uses content hashing (source, lockfile, env) to skip work when nothing relevant changed. To build only affected projects since a Git ref: <code>turbo run build --since=origin/main</code>.</p>
+
+                        <h4>Change detection workflow (example)</h4>
+                        <p>This CI-friendly script builds only affected projects and deploys just the apps that changed since a base ref. It’s intentionally simple and repo-agnostic.</p>
+                        <div class="code-block">
+
+                        <pre><span class="comment">#!/usr/bin/env bash</span>
+<span class="keyword">set</span> -euo pipefail
+
+BASE_REF=<span class="string">"${BASE_REF:-origin/main}"</span>
+APPS_ROOT=<span class="string">"${APPS_ROOT:-apps}"</span>
+
+echo <span class="string">"▶️ Building only affected projects since ${BASE_REF}"</span>
+npx turbo run build --since=<span class="string">"${BASE_REF}"</span> --output-logs=errors-only
+
+echo <span class="string">"🔎 Detecting which apps changed since ${BASE_REF}"</span>
+changed_apps=()
+<span class="keyword">for</span> app <span class="keyword">in</span> <span class="string">"${APPS_ROOT}"</span>/*; <span class="keyword">do</span>
+  [ -d <span class="string">"${app}"</span> ] || <span class="keyword">continue</span>
+  [ -f <span class="string">"${app}/package.json"</span> ] || <span class="keyword">continue</span>
+  <span class="keyword">if</span> ! git diff --quiet <span class="string">"${BASE_REF}"</span>..HEAD -- <span class="string">"${app}"</span>; <span class="keyword">then</span>
+    changed_apps+=(<span class="string">"$(basename \"${app}\")"</span>)
+  <span class="keyword">fi</span>
+<span class="keyword">done</span>
+
+<span class="keyword">if</span> [ <span class="string">${#changed_apps[@]}</span> -eq 0 ]; <span class="keyword">then</span>
+  echo <span class="string">"✅ No app changes detected; skipping deploy."</span>
+  <span class="keyword">exit</span> 0
+<span class="keyword">fi</span>
+
+echo <span class="string">"🚀 Deploying changed apps: ${changed_apps[*]}"</span>
+<span class="keyword">for</span> app <span class="keyword">in</span> <span class="string">"${changed_apps[@]}"</span>; <span class="keyword">do</span>
+  echo <span class="string">"--- Deploying $app ---"</span>
+  <span class="comment"># Example: pnpm --filter "$app" run deploy</span>
+  <span class="comment"># Or:      npm run -w "${APPS_ROOT}/$app" deploy</span>
+  :
+<span class="keyword">done</span></pre>
+                        </div>
+
+
+                        <p>Notes:</p>
+                        <ul>
+                            <li>This example detects direct changes inside each app. If you also have shared packages (e.g., <code>packages/*</code>), you can deploy dependents when those change by adding a small dependency map or by using Turborepo filters like <code>--filter</code> to include dependents.</li>
+                            <li>For even faster CI, enable Turborepo’s remote caching so identical tasks are restored instantly across machines.</li>
+                        </ul>
+
+
 
                     <h3>Organizational Solutions</h3>
 
@@ -3853,7 +3975,7 @@ exposes: {
         //<![CDATA[
         // Add class to body immediately
         document.body.classList.add('altersquare-micro-frontend-demo');
-        
+
         // Sidebar functionality
         function toggleSidebar(event) {
             if (event) {
@@ -3905,7 +4027,7 @@ exposes: {
             //     window.scrollTo(0, 0);
             // }
             updateActiveLink();
-            
+
             // Initialize mobile menu toggle
             const mobileToggle = document.getElementById('mobile-menu-toggle');
             if (mobileToggle) {

@@ -29,6 +29,13 @@ jobs:
         env:
           NODE_ENV: production
 
+      - name: Debug SSH
+        run: |
+          echo "$SSH_PRIVATE_KEY" | head -n 5
+          echo "$SERVER_HOST" | head -n 5
+          echo "$SERVER_USER" | head -n 5
+          echo "$SERVER_SSH_PORT" | head -n 5
+
       # Copy built files to the server via SCP
       - name: SCP files to server
         uses: appleboy/scp-action@v1
@@ -40,7 +47,7 @@ jobs:
           source: "demo-one-app/dist/*"
           target: "/var/www/demo-one-app/"
           # Optional hardening (set this if you add the host key fingerprint as a secret)
-          # fingerprint: ${{ secrets.SERVER_SSH_FINGERPRINT }}
+          # fingerprint: ${{ secrets.SERVER_SSH_FINGERPRINT }}      
 
       # Optional: restart your web server after upload
       # - name: Restart Nginx

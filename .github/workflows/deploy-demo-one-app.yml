@@ -45,7 +45,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}   # <-- PRIVATE key contents
           port: ${{ secrets.SERVER_SSH_PORT || 22 }}
           source: "demo-one-app/dist/*"
-          target: "/var/www/demo-one-app/"
+          target: "/home/aliasgar/vue-micro-frontend-deployment/demo-one-app/"
           # Optional hardening (set this if you add the host key fingerprint as a secret)
           # fingerprint: ${{ secrets.SERVER_SSH_FINGERPRINT }}      
 

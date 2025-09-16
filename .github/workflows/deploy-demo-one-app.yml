@@ -2,10 +2,12 @@ name: Deploy Demo One App
 on:
   workflow_dispatch:
   workflow_call:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,29 +21,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-      
       - name: Build Demo One App
         run: |
           echo "🏗️ Building demo-one-app..."
           npm run build:demo-one
         env:
           NODE_ENV: production
-      
-      - name: Deploy Demo One App
+
+      - name: Deploy to Standalone Server
         run: |
           echo "🚀 Deploying demo-one-app..."
-          cd demo-one-app
-          DEPLOYMENT_URL=$(vercel --prod --yes --token=$VERCEL_TOKEN)
-          echo "Deployment URL: $DEPLOYMENT_URL"
-          echo "DEPLOYMENT_URL=$DEPLOYMENT_URL" >> $GITHUB_ENV
+          rsync -avz --delete \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./demo-one-app/dist/ \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/demo-one-app/
+          
+          # Restart nginx (or your web server)
+          ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+            "sudo systemctl restart nginx"
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_DEMO_ONE }}
-      
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
       - name: Summary
         run: |
           echo "## ✅ Demo One App Deployed" >> $GITHUB_STEP_SUMMARY
-          echo "URL: $DEPLOYMENT_URL" >> $GITHUB_STEP_SUMMARY
+          echo "URL: https://${{ secrets.SERVER_HOST }}/demo-one-app" >> $GITHUB_STEP_SUMMARY

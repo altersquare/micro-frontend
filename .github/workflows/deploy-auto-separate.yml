@@ -142,20 +142,20 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📊 Deployed Apps:" >> $GITHUB_STEP_SUMMARY
           if [ "${{ needs.detect-changes.outputs.shell_changed }}" = "true" ]; then
-            echo "- ✅ **Shell App**: https://shell-app-seven.vercel.app" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ **Shell App**: https://shell.altersquare.io" >> $GITHUB_STEP_SUMMARY
           fi
           if [ "${{ needs.detect-changes.outputs.demo_one_changed }}" = "true" ]; then
-            echo "- ✅ **Demo One App**: https://demo-app-one-two.vercel.app" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ **Demo One App**: https://dm1.altersquare.io" >> $GITHUB_STEP_SUMMARY
           fi
           if [ "${{ needs.detect-changes.outputs.demo_two_changed }}" = "true" ]; then
-            echo "- ✅ **Demo Two App**: https://demo-app-two-delta.vercel.app" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ **Demo Two App**: https://dm2.altersquare.io" >> $GITHUB_STEP_SUMMARY
           fi
           if [ "${{ needs.detect-changes.outputs.demo_three_changed }}" = "true" ]; then
-            echo "- ✅ **Demo Three App**: https://demo-app-three-jet.vercel.app" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ **Demo Three App**: https://dm3.altersquare.io" >> $GITHUB_STEP_SUMMARY
           fi
           if [ "${{ needs.detect-changes.outputs.demo_counter_changed }}" = "true" ]; then
-            echo "- ✅ **Demo Counter App**: https://demo-counter.vercel.app" >> $GITHUB_STEP_SUMMARY
+            echo "- ✅ **Demo Counter App**: https://counter.altersquare.io" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🔗 Main Application:" >> $GITHUB_STEP_SUMMARY
-          echo "**🏠 Shell App**: https://shell-app-seven.vercel.app" >> $GITHUB_STEP_SUMMARY
+          echo "**🏠 Shell App**: https://shell.altersquare.io" >> $GITHUB_STEP_SUMMARY

@@ -9,7 +9,7 @@ import DemoTwoCanvas from './components/DemoTwoCanvas.vue'
       <p>Standalone Fabric.js demo for text and image manipulation</p>
     </header>
     <main>
-      
+
       <DemoTwoCanvas />
     </main>
   </div>
@@ -71,7 +71,7 @@ body {
   font-weight: 700;
 }
 
-.demo-header h1 .material-icons{
+.demo-header h1 .material-icons {
   font-size: 3rem;
   vertical-align: middle;
   padding-bottom: 8px;
@@ -144,27 +144,25 @@ main {
   header p {
     font-size: 1.1rem;
   }
-/* 
+
+  /* 
   main {
     padding: 1.5rem 1rem;
   }
 } */
 
-@media (max-width: 480px) {
-  header {
-    padding: 1.5rem 1rem;
-  }
+  @media (max-width: 480px) {
+    header {
+      padding: 1.5rem 1rem;
+    }
 
-  header h1 {
-    font-size: 1.875rem;
-  }
+    header h1 {
+      font-size: 1.875rem;
+    }
 
-  header p {
-    font-size: 1rem;
+    header p {
+      font-size: 1rem;
+    }
   }
-/* 
-  main {
-    padding: 1rem;
-  } */
 }
 </style>

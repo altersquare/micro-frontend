@@ -2,7 +2,7 @@ name: Auto Deploy to Separate Projects
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ prod ]
   workflow_dispatch:
 
 jobs:

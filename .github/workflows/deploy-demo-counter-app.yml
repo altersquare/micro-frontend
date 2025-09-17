@@ -1,47 +1,66 @@
 name: Deploy Demo Counter App
+
 on:
   workflow_dispatch:
   workflow_call:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-      
+
       - name: Build Demo Counter App
         run: |
           echo "🏗️ Building demo-counter-app..."
           npm run build:demo-counter
         env:
           NODE_ENV: production
-      
-      - name: Deploy Demo Counter App
+
+      - name: Debug SSH
         run: |
-          echo "🚀 Deploying demo-counter-app..."
-          cd demo-counter-app
-          DEPLOYMENT_URL=$(vercel --prod --yes --token=$VERCEL_TOKEN)
-          echo "Deployment URL: $DEPLOYMENT_URL"
-          echo "DEPLOYMENT_URL=$DEPLOYMENT_URL" >> $GITHUB_ENV
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID_DEMO_COUNTER }}
-      
+          echo "$SSH_PRIVATE_KEY" | head -n 5
+          echo "$SERVER_HOST" | head -n 5
+          echo "$SERVER_USER" | head -n 5
+          echo "$SERVER_SSH_PORT" | head -n 5
+
+      # Copy built files to the server via SCP
+      - name: SCP files to server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}   # <-- PRIVATE key contents
+          port: ${{ secrets.SERVER_SSH_PORT || 22 }}
+          source: "demo-counter-app/dist/*"
+          target: "/home/aliasgar/vue-micro-frontend-deployment/demo-counter-app/"
+          # Optional hardening (set this if you add the host key fingerprint as a secret)
+          # fingerprint: ${{ secrets.SERVER_SSH_FINGERPRINT }}      
+
+      # Optional: restart your web server after upload
+      # - name: Restart Nginx
+      #   uses: appleboy/ssh-action@v1
+      #   with:
+      #     host: ${{ secrets.SERVER_HOST }}
+      #     username: ${{ secrets.SERVER_USER }}
+      #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+      #     port: ${{ secrets.SERVER_SSH_PORT || 22 }}
+      #     script: |
+      #       sudo systemctl reload nginx || sudo systemctl restart nginx
+
       - name: Summary
         run: |
-          echo "## ✅ Demo Counter App Deployed" >> $GITHUB_STEP_SUMMARY
-          echo "URL: $DEPLOYMENT_URL" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Demo One App Deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "URL: https://${{ secrets.SERVER_HOST }}/demo-counter-app" >> "$GITHUB_STEP_SUMMARY"

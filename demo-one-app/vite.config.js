@@ -1,33 +1,32 @@
 import { federation } from "@module-federation/vite";
 import vue from "@vitejs/plugin-vue";
-import { fileURLToPath, URL } from 'node:url'
+import { fileURLToPath, URL } from "node:url";
 import { defineConfig, loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => {
-  // Try to load environment variables from root directory first (for development)
-  // Then fallback to current directory (for Vercel deployment)
-  let env = loadEnv(mode, '../', '')
+  // Load env (root first, then local fallback)
+  let env = loadEnv(mode, "../", "");
+  if (!env.VITE_DEMO_ONE_PORT) env = loadEnv(mode, "./", "");
 
-  // If no environment variables found, try loading from current directory
-  if (!env.VITE_DEMO_ONE_PORT) {
-    env = loadEnv(mode, './', '')
+  const requiredEnvVars = ["VITE_SHELL_REMOTE_ENTRY", "VITE_DEMO_ONE_PORT"];
+  const missing = requiredEnvVars.filter((k) => !env[k]);
+  if (missing.length) {
+    throw new Error(
+      `Missing required environment variables: ${missing.join(
+        ", "
+      )}. Please check your .env files.`
+    );
   }
 
-  // Validate required environment variables
-  const requiredEnvVars = ['VITE_SHELL_REMOTE_ENTRY', 'VITE_DEMO_ONE_PORT']
-  const missingVars = requiredEnvVars.filter(varName => !env[varName])
-  if (missingVars.length > 0) {
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}. Please check your .env.local or .env.production file.`)
-  }
-
-  // Use environment variables for remote entries
-  const shellRemoteEntry = env.VITE_SHELL_REMOTE_ENTRY
+  const shellRemoteEntry = env.VITE_SHELL_REMOTE_ENTRY;
 
   return {
+    // IMPORTANT: keep root base so built URLs start with '/'
     base: "/",
+
     plugins: [
       federation({
-        filename: "remoteEntry.js",
+        filename: "remoteEntry.js", // will be emitted at site root
         name: "demoOneApp",
         exposes: {
           "./DemoOneCanvas": "./src/components/DemoOneCanvas.vue",
@@ -44,43 +43,53 @@ export default defineConfig(({ mode }) => {
         },
         shared: {
           vue: { singleton: true },
-          fabric: { singleton: true }
-        }
+          fabric: { singleton: true },
+        },
       }),
       vue(),
     ],
+
     resolve: {
       alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url))
-      }
+        "@": fileURLToPath(new URL("./src", import.meta.url)),
+      },
     },
+
     optimizeDeps: {
-      include: ['fabric']
+      include: ["fabric"],
     },
+
     build: {
       outDir: "dist",
       target: "chrome89",
       cssCodeSplit: false,
+
+      // === Key changes: emit everything at the ROOT (no /assets) ===
+      assetsDir: "", // place static assets at '/'
       rollupOptions: {
         output: {
+          // keep module-federation friendly names at root
+          entryFileNames: "[name].js",
+          chunkFileNames: "[name].js",
+          assetFileNames: "[name].[ext]",
           manualChunks: undefined,
-          assetFileNames: 'assets/[name].[ext]'
         },
         external: [],
       },
     },
+
     server: {
       port: parseInt(env.VITE_DEMO_ONE_PORT),
       cors: true,
-      fs: {
-        allow: ["..", "."]
-      },
+      fs: { allow: ["..", "."] },
       allowedHosts: true,
     },
+
     preview: {
       port: parseInt(env.VITE_DEMO_ONE_PORT),
       cors: true,
+      // (optional) if you want a separate preview output path, keep it.
       outDir: "../dist/demo-one-app",
-    }
-  }
+    },
+  };
 });
